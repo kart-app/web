@@ -13,15 +13,17 @@
             text-align: center;
             justify-content: center;
             align-items: center;
+            margin: 0;
         }
         img{
-            max-width: 40vh;
+            margin-top: 19px;
+            max-width: 50vh;
             margin-bottom: 10vh;
         }
         p{
-            font-family: Arial, sans-serif;
-            font-weight: bold;
-            font-size: 2em;
+            font-family: kufam , sans-serif;
+            font-weight: 500;
+            font-size: 1.5em;
         }
         .butt{
             display: flex;
@@ -101,15 +103,15 @@
             padding: 20px;
             width: 300px;
             margin: 20px auto;
-            box-shadow: 0 10px 25px #4f225d;
             border-radius: 20px;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
             overflow: hidden;
+            display: none; /* Hide details initially */
         }
-        .details-container:hover {
-            transform: scale(1.05);
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
+        .details-container.show {
+            display: block;
         }
+
         .details-container h2 {
             color:#4f225d;
             border-bottom: 3px solid #4f225d;
@@ -130,24 +132,24 @@
             padding-bottom: 8px;
             display: flex;
             align-items: center;
+            justify-content: flex-start;
             transition: background-color 0.3s ease;
             border-radius: 10px;
             padding: 5px 0;
+            direction: rtl;
         }
         .detail:hover {
             background-color: #fcb69f33;
         }
         .label {
             font-weight: bold;
-            width: 120px;
-            padding-left: 10px;
+            margin-left: 10px;
             color: #444;
             font-size: 14px;
         }
         .value {
             flex-grow: 1;
             text-align: left;
-            padding-right: 10px;
             font-size: 14px;
             color: #555;
         }
@@ -159,14 +161,92 @@
         .details-container a:hover {
             text-decoration: underline;
         }
+
+        .accept-message {
+            padding: 0px 15px;
+            border-radius: 10px;
+            background-color: #ccd5ce;
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+            margin-top: 15px;
+            opacity: 0;
+            transform: scale(0.9);
+            transition: all 0.5s ease;
+        }
+        .accept-message.show {
+            opacity: 1;
+            transform: scale(1);
+        }
+        .reject-message {
+            border: 1px solid #b22222;
+            padding: 0px 15px;
+            border-radius: 10px;
+            background-color: #f9e6e6;
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+            margin-top: 15px;
+            opacity: 0;
+            transform: scale(0.9);
+            transition: all 0.5s ease;
+        }
+        .reject-message.show {
+            opacity: 1;
+            transform: scale(1);
+        }
+        .footer {
+            font-family: kufam;
+            margin-top: 20px;
+            font-size: 14px;
+            color: rgb(244, 241, 232);
+            background-color: #4f225d;
+            padding: 10px;
+            position: fixed;
+           
+            bottom: 0;
+            left: 0;
+            right: 0;
+        }
+        
+        @media (max-width: 768px) {
+            img{
+            max-width: 35vh;
+        }
+        }
+        
+        
+       
     </style>
+    <script>
+        function handleButtonClick(action) {
+            const footer = document.querySelector('.footer');
+            const buttonContainer = document.querySelector('.butt');
+            const detailsContainer = document.querySelector('.details-container');
+            let messageHTML = '';
+            if (action === 'accept') {
+                footer.style.position = 'static';
+                messageHTML = '<div class="accept-message" id="response-message"><p>😊 بتشرفنا  </p></div>';
+                detailsContainer.classList.add('show'); // Show the event details if accepted
+            } else {
+                messageHTML = '<div class="reject-message" id="response-message"><p>😔 يا سفابك </p></div>';
+            }
+            buttonContainer.innerHTML = messageHTML;
+            setTimeout(() => {
+                document.getElementById('response-message').classList.add('show');
+            }, 50);
+        }
+
+        function updateFooterYear() {
+            const year = new Date().getFullYear();
+            document.getElementById('footer-year').textContent = year;
+        }
+
+        document.addEventListener('DOMContentLoaded', updateFooterYear);
+    </script>
 </head>
 <body>
     <img src="logo.png" alt="logo">
-    <p>((..........)) لديك دعوة من</p>
+    <p>( عبدالله البكر   ) لديك دعوة من</p>
     <div class="butt">
-        <button class="button accept"><span>قبول</span></button>
-        <button class="button reject"><span>رفض</span></button>
+        <button class="button accept" onclick="handleButtonClick('accept')"><span>قبول</span></button>
+        <button class="button reject" onclick="handleButtonClick('reject')"><span>رفض</span></button>
     </div>
     <div class="details-container">
         <h2>تفاصيل المناسبة</h2>
@@ -205,5 +285,6 @@
             </div>
         </div>
     </div>
+    <div class="footer">جميع الحقوق محفوظة لكرت &copy; <span id="footer-year"></span></div>
 </body>
 </html>
