@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kufam:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet">
+    <style>
+        body{
+            background-color: rgb(244, 241, 232);
+            text-align: center;
+            justify-content: center;
+            align-items: center;
+        }
+        img{
+            max-width: 40vh;
+            margin-bottom: 10vh;
+        }
+        p{
+            font-family: Arial, sans-serif;
+            font-weight: bold;
+            font-size: 2em;
+        }
+        .butt{
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .button {
+            padding: 15px 30px;
+            font-size: 22px;
+            margin: 10px;
+            border: none;
+            cursor: pointer;
+            border-radius: 70px;
+            transition: all 0.4s ease;
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .button::before {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 300%;
+            height: 300%;
+            background: rgba(255, 255, 255, 0.2);
+            transform: translate(-50%, -50%) rotate(45deg);
+            transition: all 0.75s ease;
+            opacity: 0;
+        }
+
+        .button:hover::before {
+            width: 400%;
+            height: 400%;
+            opacity: 1;
+        }
+
+        .accept {
+            background: linear-gradient(135deg, #006400, #228b22);
+            color: white;
+        }
+
+        .reject {
+            background: linear-gradient(135deg, #8b0000, #b22222);
+            color: white;
+        }
+
+        .accept:hover {
+            background: linear-gradient(135deg, #008000, #2e8b57);
+            box-shadow: 0 12px 20px rgba(0, 128, 0, 0.4);
+            transform: translateY(-3px) scale(1.05);
+        }
+
+        .reject:hover {
+            background: linear-gradient(135deg, #a52a2a, #dc143c);
+            box-shadow: 0 12px 20px rgba(139, 0, 0, 0.4);
+            transform: translateY(-3px) scale(1.05);
+        }
+
+        .button:active {
+            transform: translateY(0) scale(1);
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .button span {
+            position: relative;
+            z-index: 2;
+        }
+
+        .details-container {
+            text-align: center;
+            justify-content: center;
+            align-items: center;
+            background-color: #ffffff;
+            border: 2px solid #4f225d;
+            padding: 20px;
+            width: 300px;
+            margin: 20px auto;
+            box-shadow: 0 10px 25px #4f225d;
+            border-radius: 20px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            overflow: hidden;
+        }
+        .details-container:hover {
+            transform: scale(1.05);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
+        }
+        .details-container h2 {
+            color:#4f225d;
+            border-bottom: 3px solid #4f225d;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            font-size: 22px;
+            text-align: center;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+        .details-list {
+            background-color: #f7f7f7;
+            border-radius: 15px;
+            padding: 10px;
+        }
+        .detail {
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            display: flex;
+            align-items: center;
+            transition: background-color 0.3s ease;
+            border-radius: 10px;
+            padding: 5px 0;
+        }
+        .detail:hover {
+            background-color: #fcb69f33;
+        }
+        .label {
+            font-weight: bold;
+            width: 120px;
+            padding-left: 10px;
+            color: #444;
+            font-size: 14px;
+        }
+        .value {
+            flex-grow: 1;
+            text-align: left;
+            padding-right: 10px;
+            font-size: 14px;
+            color: #555;
+        }
+        .details-container a {
+            color: #4f225d;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .details-container a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <img src="logo.png" alt="logo">
+    <p>((..........)) لديك دعوة من</p>
+    <div class="butt">
+        <button class="button accept"><span>قبول</span></button>
+        <button class="button reject"><span>رفض</span></button>
+    </div>
+    <div class="details-container">
+        <h2>تفاصيل المناسبة</h2>
+        <div class="details-list">
+            <div class="detail">
+                <span class="label">رابط الموقع:</span>
+                <span class="value" id="site-link"><a href="https://hayhom.com/07kVHN5WtJMEGv5" target="_blank">https://hayhom.com/07kVHN5WtJMEGv5</a></span>
+            </div>
+            <div class="detail">
+                <span class="label">اسم الموقع:</span>
+                <span class="value" id="site-name">قاعة رمز للمناسبات</span>
+            </div>
+            <div class="detail">
+                <span class="label">المدينة:</span>
+                <span class="value" id="city">الرياض</span>
+            </div>
+            <div class="detail">
+                <span class="label">اسم الداعي:</span>
+                <span class="value" id="inviter-name">هاجر الحصين وبشرى الحصين</span>
+            </div>
+            <div class="detail">
+                <span class="label">اسم المناسبة:</span>
+                <span class="value" id="event-name">حفل زفاف سمية وعبدالله</span>
+            </div>
+            <div class="detail">
+                <span class="label">اليوم:</span>
+                <span class="value" id="day">الثلاثاء</span>
+            </div>
+            <div class="detail">
+                <span class="label">التاريخ:</span>
+                <span class="value" id="date">2024/11/12</span>
+            </div>
+            <div class="detail">
+                <span class="label">الوقت:</span>
+                <span class="value" id="time">09:00 PM</span>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
