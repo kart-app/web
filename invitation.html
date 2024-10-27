@@ -1,35 +1,41 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Kufam:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Kufam:ital,wght@0,400..900;1,400..900&display=swap"
+        rel="stylesheet">
     <style>
-        body{
+        body {
             background-color: rgb(244, 241, 232);
             text-align: center;
             justify-content: center;
             align-items: center;
             margin: 0;
         }
-        img{
+
+        img {
             margin-top: 19px;
             max-width: 50vh;
             margin-bottom: 10vh;
         }
-        p{
-            font-family: kufam , sans-serif;
+
+        p {
+            font-family: kufam, sans-serif;
             font-weight: 500;
             font-size: 1.5em;
         }
-        .butt{
+
+        .butt {
             display: flex;
             justify-content: center;
             align-items: center;
         }
+
         .button {
             padding: 15px 30px;
             font-size: 22px;
@@ -106,14 +112,16 @@
             border-radius: 20px;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
             overflow: hidden;
-            display: none; /* Hide details initially */
+            display: none;
+            /* Hide details initially */
         }
+
         .details-container.show {
             display: block;
         }
 
         .details-container h2 {
-            color:#4f225d;
+            color: #4f225d;
             border-bottom: 3px solid #4f225d;
             padding-bottom: 10px;
             margin-bottom: 20px;
@@ -122,11 +130,13 @@
             font-weight: 700;
             letter-spacing: 1px;
         }
+
         .details-list {
             background-color: #f7f7f7;
             border-radius: 15px;
             padding: 10px;
         }
+
         .detail {
             margin-bottom: 15px;
             padding-bottom: 8px;
@@ -138,26 +148,31 @@
             padding: 5px 0;
             direction: rtl;
         }
+
         .detail:hover {
             background-color: #fcb69f33;
         }
+
         .label {
             font-weight: bold;
             margin-left: 10px;
             color: #444;
             font-size: 14px;
         }
+
         .value {
             flex-grow: 1;
             text-align: left;
             font-size: 14px;
             color: #555;
         }
+
         .details-container a {
             color: #4f225d;
             text-decoration: none;
             font-weight: bold;
         }
+
         .details-container a:hover {
             text-decoration: underline;
         }
@@ -172,10 +187,12 @@
             transform: scale(0.9);
             transition: all 0.5s ease;
         }
+
         .accept-message.show {
             opacity: 1;
             transform: scale(1);
         }
+
         .reject-message {
             border: 1px solid #b22222;
             padding: 0px 15px;
@@ -187,10 +204,12 @@
             transform: scale(0.9);
             transition: all 0.5s ease;
         }
+
         .reject-message.show {
             opacity: 1;
             transform: scale(1);
         }
+
         .footer {
             font-family: kufam;
             margin-top: 20px;
@@ -199,51 +218,192 @@
             background-color: #4f225d;
             padding: 10px;
             position: fixed;
-           
+
             bottom: 0;
             left: 0;
             right: 0;
         }
-        
+
         @media (max-width: 768px) {
-            img{
-            max-width: 35vh;
+            img {
+                max-width: 35vh;
+            }
         }
-        }
-        
-        
-       
     </style>
     <script>
-        function handleButtonClick(action) {
-            const footer = document.querySelector('.footer');
-            const buttonContainer = document.querySelector('.butt');
-            const detailsContainer = document.querySelector('.details-container');
-            let messageHTML = '';
-            if (action === 'accept') {
-                footer.style.position = 'static';
-                messageHTML = '<div class="accept-message" id="response-message"><p>😊 بتشرفنا  </p></div>';
-                detailsContainer.classList.add('show'); // Show the event details if accepted
-            } else {
-                messageHTML = '<div class="reject-message" id="response-message"><p>😔 يا سفابك </p></div>';
+async function handleButtonClick(action) {
+    const code = getQueryParameter('code');
+    if (!code) {
+        return;
+    }
+
+    try {
+        // First get current status
+        const statusResponse = await fetch(`https://localhost:7266/api/event/invitations/${code}/event-details`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
             }
-            buttonContainer.innerHTML = messageHTML;
+        });
+
+        if (!statusResponse.ok) {
+            throw new Error('Failed to check invitation status');
+        }
+
+        const statusData = await statusResponse.json();
+        
+        // Check if invitation can be updated
+        if (statusData.invitationStatus === 'Accepted' || statusData.invitationStatus === 'Declined') {
+            const buttonContainer = document.querySelector('.butt');
+            const message = statusData.invitationStatus === 'Accepted' 
+                ? '<div class="reject-message" id="response-message"><p>عذراً، لقد تم قبول الدعوة مسبقاً</p></div>'
+                : '<div class="reject-message" id="response-message"><p>عذراً، لقد تم رفض الدعوة مسبقاً</p></div>';
+            
+            buttonContainer.innerHTML = message;
             setTimeout(() => {
                 document.getElementById('response-message').classList.add('show');
             }, 50);
+            return;
         }
+
+        // Proceed with updating the response
+        const response = await fetch(`https://localhost:7266/api/event/invitations/${code}/response`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                isAccepting: action === 'accept'
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error('API request failed');
+        }
+
+        const footer = document.querySelector('.footer');
+        const buttonContainer = document.querySelector('.butt');
+        const detailsContainer = document.querySelector('.details-container');
+        let messageHTML = '';
+        
+        if (action === 'accept') {
+            footer.style.position = 'static';
+            messageHTML = '<div class="accept-message" id="response-message"><p>😊 بتشرفنا  </p></div>';
+            detailsContainer.classList.add('show');
+        } else {
+            messageHTML = '<div class="reject-message" id="response-message"><p>😔 يا سفابك </p></div>';
+        }
+        
+        buttonContainer.innerHTML = messageHTML;
+        setTimeout(() => {
+            document.getElementById('response-message').classList.add('show');
+        }, 50);
+
+    } catch (error) {
+        const buttonContainer = document.querySelector('.butt');
+        const errorMessage = '<div class="reject-message" id="response-message"><p>عذراً، حدث خطأ في إرسال ردك</p></div>';
+        buttonContainer.innerHTML = errorMessage;
+        setTimeout(() => {
+            document.getElementById('response-message').classList.add('show');
+        }, 50);
+    }
+}
 
         function updateFooterYear() {
             const year = new Date().getFullYear();
             document.getElementById('footer-year').textContent = year;
         }
 
-        document.addEventListener('DOMContentLoaded', updateFooterYear);
+        function getQueryParameter(param) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(param);
+        }
+
+        async function fetchEventDetails() {
+    const code = getQueryParameter('code');
+    
+    if (!code) {
+        document.getElementById('error-message').style.display = 'block';
+        document.getElementById('error-message').innerText = 'عذراً، رابط الدعوة غير صالح';
+        document.querySelector('p').style.display = 'none';
+        document.querySelector('.butt').style.display = 'none';
+        return;
+    }
+
+    try {
+        const response = await fetch(`https://localhost:7266/api/event/invitations/${code}/event-details`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error('API request failed');
+        }
+
+        const data = await response.json();
+        
+        // Update the page with API response data
+        document.querySelector('p').innerText = `لديك دعوة من (${data.inviterName})`;
+        document.getElementById('site-name').innerText = data.locationName;
+        document.getElementById('site-link').innerHTML = `<a href="${data.locationLink}" target="_blank">${data.locationLink}</a>`;
+        document.getElementById('city').innerText = data.cityName;
+        document.getElementById('inviter-name').innerText = data.inviterName;
+        document.getElementById('event-name').innerText = data.name;
+        document.getElementById('number-of-invitations').innerText = data.numberOfInvitations;
+
+        // Format the date and time
+        const eventDate = new Date(data.date);
+        const dayNames = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
+        
+        document.getElementById('day').innerText = dayNames[eventDate.getDay()];
+        
+        const formattedDate = eventDate.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit'
+        }).replace(/(\d+)\/(\d+)\/(\d+)/, '$3/$1/$2');
+        document.getElementById('date').innerText = formattedDate;
+
+        const hours = eventDate.getHours();
+        const minutes = eventDate.getMinutes();
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        const formattedHours = hours % 12 || 12;
+        const formattedMinutes = minutes.toString().padStart(2, '0');
+        document.getElementById('time').innerText = `${formattedHours}:${formattedMinutes} ${ampm}`;
+
+        // Handle invitation status
+        const buttonContainer = document.querySelector('.butt');
+        if (data.invitationStatus === 'Accepted') {
+            buttonContainer.innerHTML = '<div class="accept-message show"><p>😊 تم قبول الدعوة مسبقاً  </p></div>';
+            document.querySelector('.footer').style.position = 'static';
+            document.querySelector('.details-container').classList.add('show');
+        } else if (data.invitationStatus === 'Declined') {
+            buttonContainer.innerHTML = '<div class="reject-message show"><p>😔 تم رفض الدعوة مسبقاً </p></div>';
+        }
+        // If status is "Created", the original buttons will remain visible
+        
+    } catch (error) {
+        document.getElementById('error-message').style.display = 'block';
+        document.getElementById('error-message').innerText = 'عذراً، حدث خطأ في جلب تفاصيل الدعوة';
+        document.querySelector('p').style.display = 'none';
+        document.querySelector('.butt').style.display = 'none';
+    }
+}
+
+        // Add this to your existing DOMContentLoaded event listener
+        document.addEventListener('DOMContentLoaded', function () {
+            updateFooterYear();
+            fetchEventDetails();
+        });
     </script>
 </head>
+
 <body>
     <img src="logo.png" alt="logo">
-    <p>( عبدالله البكر   ) لديك دعوة من</p>
+    <div id="error-message" style="display: none; color: #b22222; font-family: kufam; padding: 20px;"></div>
+    <p></p>
     <div class="butt">
         <button class="button accept" onclick="handleButtonClick('accept')"><span>قبول</span></button>
         <button class="button reject" onclick="handleButtonClick('reject')"><span>رفض</span></button>
@@ -253,38 +413,44 @@
         <div class="details-list">
             <div class="detail">
                 <span class="label">رابط الموقع:</span>
-                <span class="value" id="site-link"><a href="https://hayhom.com/07kVHN5WtJMEGv5" target="_blank">https://hayhom.com/07kVHN5WtJMEGv5</a></span>
+                <span class="value" id="site-link"><a href="https://hayhom.com/07kVHN5WtJMEGv5"
+                        target="_blank">https://hayhom.com/07kVHN5WtJMEGv5</a></span>
             </div>
             <div class="detail">
                 <span class="label">اسم الموقع:</span>
-                <span class="value" id="site-name">قاعة رمز للمناسبات</span>
+                <span class="value" id="site-name"></span>
             </div>
             <div class="detail">
                 <span class="label">المدينة:</span>
-                <span class="value" id="city">الرياض</span>
+                <span class="value" id="city"></span>
             </div>
             <div class="detail">
                 <span class="label">اسم الداعي:</span>
-                <span class="value" id="inviter-name">هاجر الحصين وبشرى الحصين</span>
+                <span class="value" id="inviter-name"></span>
             </div>
             <div class="detail">
                 <span class="label">اسم المناسبة:</span>
-                <span class="value" id="event-name">حفل زفاف سمية وعبدالله</span>
+                <span class="value" id="event-name"></span>
+            </div>
+            <div class="detail">
+                <span class="label">عدد الدعوات:</span>
+                <span class="value" id="number-of-invitations"></span>
             </div>
             <div class="detail">
                 <span class="label">اليوم:</span>
-                <span class="value" id="day">الثلاثاء</span>
+                <span class="value" id="day"></span>
             </div>
             <div class="detail">
                 <span class="label">التاريخ:</span>
-                <span class="value" id="date">2024/11/12</span>
+                <span class="value" id="date"></span>
             </div>
             <div class="detail">
                 <span class="label">الوقت:</span>
-                <span class="value" id="time">09:00 PM</span>
+                <span class="value" id="time"></span>
             </div>
         </div>
     </div>
     <div class="footer">جميع الحقوق محفوظة لكرت &copy; <span id="footer-year"></span></div>
 </body>
+
 </html>
