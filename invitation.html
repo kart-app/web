@@ -258,192 +258,245 @@
             color: #666;
             margin: 10px 0;
         }
+
+        .loader-container {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.8);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .loader {
+            width: 48px;
+            height: 48px;
+            border: 5px solid #4f225d;
+            border-bottom-color: transparent;
+            border-radius: 50%;
+            display: inline-block;
+            box-sizing: border-box;
+            animation: rotation 1s linear infinite;
+        }
+
+        @keyframes rotation {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
     </style>
     <script>
- async function handleButtonClick(action) {
-    const code = getQueryParameter('code');
-    if (!code) {
-        return;
-    }
+        async function handleButtonClick(action) {
+            showLoader();
 
-    try {
-        // First get current status
-        const statusResponse = await fetch(`https://kart-dev.azurewebsites.net/api/event/invitations/${code}/event-details`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json'
+            const code = getQueryParameter('code');
+            if (!code) {
+                hideLoader();
+                return;
             }
-        });
 
-        if (!statusResponse.ok) {
-            throw new Error('Failed to check invitation status');
-        }
+            try {
+                // First get current status
+                const statusResponse = await fetch(`https://kart-dev.azurewebsites.net/api/event/invitations/${code}/event-details`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
 
-        const statusData = await statusResponse.json();
+                if (!statusResponse.ok) {
+                    throw new Error('Failed to check invitation status');
+                }
 
-        // Check if invitation can be updated
-        if (statusData.invitationStatus === 'Accepted' || statusData.invitationStatus === 'Declined') {
-            const buttonContainer = document.querySelector('.butt');
-            const message = statusData.invitationStatus === 'Accepted'
-                ? '<div class="reject-message" id="response-message"><p>عذراً، لقد تم قبول الدعوة مسبقاً</p></div>'
-                : '<div class="reject-message" id="response-message"><p>عذراً، لقد تم رفض الدعوة مسبقاً</p></div>';
+                const statusData = await statusResponse.json();
 
-            buttonContainer.innerHTML = message;
-            setTimeout(() => {
-                document.getElementById('response-message').classList.add('show');
-            }, 50);
-            return;
-        }
+                // Check if invitation can be updated
+                if (statusData.invitationStatus === 'Accepted' || statusData.invitationStatus === 'Declined') {
+                    const buttonContainer = document.querySelector('.butt');
+                    const message = statusData.invitationStatus === 'Accepted'
+                        ? '<div class="reject-message" id="response-message"><p>عذراً، لقد تم قبول الدعوة مسبقاً</p></div>'
+                        : '<div class="reject-message" id="response-message"><p>عذراً، لقد تم رفض الدعوة مسبقاً</p></div>';
 
-        // Proceed with updating the response
-        const response = await fetch(`https://kart-dev.azurewebsites.net/api/event/invitations/${code}/response`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                isAccepting: action === 'accept'
-            })
-        });
+                    buttonContainer.innerHTML = message;
+                    setTimeout(() => {
+                        document.getElementById('response-message').classList.add('show');
+                    }, 50);
+                    return;
+                }
 
-        if (!response.ok) {
-            throw new Error('API request failed');
-        }
+                // Proceed with updating the response
+                const response = await fetch(`https://kart-dev.azurewebsites.net/api/event/invitations/${code}/response`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        isAccepting: action === 'accept'
+                    })
+                });
 
-        const footer = document.querySelector('.footer');
-        const buttonContainer = document.querySelector('.butt');
-        const detailsContainer = document.querySelector('.details-container');
-        let messageHTML = '';
+                if (!response.ok) {
+                    throw new Error('API request failed');
+                }
 
-        if (action === 'accept') {
-            footer.style.position = 'static';
-            messageHTML = '<div class="accept-message" id="response-message"><p>😊 بتشرفنا  </p></div>';
-            detailsContainer.classList.add('show');
-            
-            // Show QR code
-            const qrContainer = document.getElementById('qr-container');
-            const qrImage = document.getElementById('qr-code');
-            qrImage.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(code)}`;
-            qrContainer.style.display = 'block';
-        } else {
-            messageHTML = '<div class="reject-message" id="response-message"><p>😔 يا سفابك </p></div>';
-            // Hide QR code if rejection
-            document.getElementById('qr-container').style.display = 'none';
-        }
+                const footer = document.querySelector('.footer');
+                const buttonContainer = document.querySelector('.butt');
+                const detailsContainer = document.querySelector('.details-container');
+                let messageHTML = '';
 
-        buttonContainer.innerHTML = messageHTML;
-        setTimeout(() => {
-            document.getElementById('response-message').classList.add('show');
-        }, 50);
+                if (action === 'accept') {
+                    footer.style.position = 'static';
+                    messageHTML = '<div class="accept-message" id="response-message"><p>😊 بتشرفنا  </p></div>';
+                    detailsContainer.classList.add('show');
 
-    } catch (error) {
-        const buttonContainer = document.querySelector('.butt');
-        const errorMessage = '<div class="reject-message" id="response-message"><p>عذراً، حدث خطأ في إرسال ردك</p></div>';
-        buttonContainer.innerHTML = errorMessage;
-        setTimeout(() => {
-            document.getElementById('response-message').classList.add('show');
-        }, 50);
-    }
-}
+                    // Show QR code
+                    const qrContainer = document.getElementById('qr-container');
+                    const qrImage = document.getElementById('qr-code');
+                    qrImage.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(code)}`;
+                    qrContainer.style.display = 'block';
+                } else {
+                    messageHTML = '<div class="reject-message" id="response-message"><p>😔 يا سفابك </p></div>';
+                    // Hide QR code if rejection
+                    document.getElementById('qr-container').style.display = 'none';
+                }
 
-function updateFooterYear() {
-    const year = new Date().getFullYear();
-    document.getElementById('footer-year').textContent = year;
-}
-
-function getQueryParameter(param) {
-    const urlParams = new URLSearchParams(window.location.search);
-    return urlParams.get(param);
-}
-
-async function fetchEventDetails() {
-    const code = getQueryParameter('code');
-
-    if (!code) {
-        document.getElementById('error-message').style.display = 'block';
-        document.getElementById('error-message').innerText = 'عذراً، رابط الدعوة غير صالح';
-        document.querySelector('p').style.display = 'none';
-        document.querySelector('.butt').style.display = 'none';
-        return;
-    }
-
-    try {
-        const response = await fetch(`https://kart-dev.azurewebsites.net/api/event/invitations/${code}/event-details`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json'
+                buttonContainer.innerHTML = messageHTML;
+                setTimeout(() => {
+                    document.getElementById('response-message').classList.add('show');
+                }, 50);
+                hideLoader();
+            } catch (error) {
+                hideLoader();
+                const buttonContainer = document.querySelector('.butt');
+                const errorMessage = '<div class="reject-message" id="response-message"><p>عذراً، حدث خطأ في إرسال ردك</p></div>';
+                buttonContainer.innerHTML = errorMessage;
+                setTimeout(() => {
+                    document.getElementById('response-message').classList.add('show');
+                }, 50);
             }
+        }
+
+        function updateFooterYear() {
+            const year = new Date().getFullYear();
+            document.getElementById('footer-year').textContent = year;
+        }
+
+        function getQueryParameter(param) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(param);
+        }
+
+        async function fetchEventDetails() {
+            showLoader();
+
+            const code = getQueryParameter('code');
+
+            if (!code) {
+                hideLoader();
+                document.getElementById('error-message').style.display = 'block';
+                document.getElementById('error-message').innerText = 'عذراً، رابط الدعوة غير صالح';
+                document.querySelector('p').style.display = 'none';
+                document.querySelector('.butt').style.display = 'none';
+                return;
+            }
+
+            try {
+                const response = await fetch(`https://kart-dev.azurewebsites.net/api/event/invitations/${code}/event-details`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('API request failed');
+                }
+
+                const data = await response.json();
+
+                // Update the page with API response data
+                document.querySelector('p').innerText = `لديك دعوة من (${data.inviterName})`;
+                document.getElementById('site-name').innerText = data.locationName;
+                document.getElementById('site-link').innerHTML = `<a href="${data.locationLink}" target="_blank">${data.locationLink}</a>`;
+                document.getElementById('city').innerText = data.cityName;
+                document.getElementById('inviter-name').innerText = data.inviterName;
+                document.getElementById('event-name').innerText = data.name;
+                document.getElementById('number-of-invitations').innerText = data.numberOfInvitations;
+
+                // Format the date and time
+                const eventDate = new Date(data.date);
+                const dayNames = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
+
+                document.getElementById('day').innerText = dayNames[eventDate.getDay()];
+
+                const formattedDate = eventDate.toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit'
+                }).replace(/(\d+)\/(\d+)\/(\d+)/, '$3/$1/$2');
+                document.getElementById('date').innerText = formattedDate;
+
+                const hours = eventDate.getHours();
+                const minutes = eventDate.getMinutes();
+                const ampm = hours >= 12 ? 'PM' : 'AM';
+                const formattedHours = hours % 12 || 12;
+                const formattedMinutes = minutes.toString().padStart(2, '0');
+                document.getElementById('time').innerText = `${formattedHours}:${formattedMinutes} ${ampm}`;
+
+                // Handle invitation status
+                const buttonContainer = document.querySelector('.butt');
+                if (data.invitationStatus === 'Accepted') {
+                    buttonContainer.innerHTML = '<div class="accept-message show"><p>😊 تم قبول الدعوة مسبقاً  </p></div>';
+                    document.querySelector('.footer').style.position = 'static';
+                    document.querySelector('.details-container').classList.add('show');
+
+                    // Show QR code for previously accepted invitations
+                    const qrContainer = document.getElementById('qr-container');
+                    const qrImage = document.getElementById('qr-code');
+                    qrImage.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(code)}`;
+                    qrContainer.style.display = 'block';
+                } else if (data.invitationStatus === 'Declined') {
+                    buttonContainer.innerHTML = '<div class="reject-message show"><p>😔 تم رفض الدعوة مسبقاً </p></div>';
+                    document.getElementById('qr-container').style.display = 'none';
+                }
+                hideLoader();
+            } catch (error) {
+                hideLoader();
+                document.getElementById('error-message').style.display = 'block';
+                document.getElementById('error-message').innerText = 'عذراً، حدث خطأ في جلب تفاصيل الدعوة';
+                document.querySelector('p').style.display = 'none';
+                document.querySelector('.butt').style.display = 'none';
+            }
+        }
+
+        // Initialize when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function () {
+            updateFooterYear();
+            fetchEventDetails();
         });
 
-        if (!response.ok) {
-            throw new Error('API request failed');
+        function showLoader() {
+            document.querySelector('.loader-container').style.display = 'flex';
         }
 
-        const data = await response.json();
-
-        // Update the page with API response data
-        document.querySelector('p').innerText = `لديك دعوة من (${data.inviterName})`;
-        document.getElementById('site-name').innerText = data.locationName;
-        document.getElementById('site-link').innerHTML = `<a href="${data.locationLink}" target="_blank">${data.locationLink}</a>`;
-        document.getElementById('city').innerText = data.cityName;
-        document.getElementById('inviter-name').innerText = data.inviterName;
-        document.getElementById('event-name').innerText = data.name;
-        document.getElementById('number-of-invitations').innerText = data.numberOfInvitations;
-
-        // Format the date and time
-        const eventDate = new Date(data.date);
-        const dayNames = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
-
-        document.getElementById('day').innerText = dayNames[eventDate.getDay()];
-
-        const formattedDate = eventDate.toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit'
-        }).replace(/(\d+)\/(\d+)\/(\d+)/, '$3/$1/$2');
-        document.getElementById('date').innerText = formattedDate;
-
-        const hours = eventDate.getHours();
-        const minutes = eventDate.getMinutes();
-        const ampm = hours >= 12 ? 'PM' : 'AM';
-        const formattedHours = hours % 12 || 12;
-        const formattedMinutes = minutes.toString().padStart(2, '0');
-        document.getElementById('time').innerText = `${formattedHours}:${formattedMinutes} ${ampm}`;
-
-        // Handle invitation status
-        const buttonContainer = document.querySelector('.butt');
-        if (data.invitationStatus === 'Accepted') {
-            buttonContainer.innerHTML = '<div class="accept-message show"><p>😊 تم قبول الدعوة مسبقاً  </p></div>';
-            document.querySelector('.footer').style.position = 'static';
-            document.querySelector('.details-container').classList.add('show');
-            
-            // Show QR code for previously accepted invitations
-            const qrContainer = document.getElementById('qr-container');
-            const qrImage = document.getElementById('qr-code');
-            qrImage.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(code)}`;
-            qrContainer.style.display = 'block';
-        } else if (data.invitationStatus === 'Declined') {
-            buttonContainer.innerHTML = '<div class="reject-message show"><p>😔 تم رفض الدعوة مسبقاً </p></div>';
-            document.getElementById('qr-container').style.display = 'none';
+        function hideLoader() {
+            document.querySelector('.loader-container').style.display = 'none';
         }
-
-    } catch (error) {
-        document.getElementById('error-message').style.display = 'block';
-        document.getElementById('error-message').innerText = 'عذراً، حدث خطأ في جلب تفاصيل الدعوة';
-        document.querySelector('p').style.display = 'none';
-        document.querySelector('.butt').style.display = 'none';
-    }
-}
-
-// Initialize when DOM is loaded
-document.addEventListener('DOMContentLoaded', function () {
-    updateFooterYear();
-    fetchEventDetails();
-});
     </script>
 </head>
 
 <body>
+    <div class="loader-container">
+        <div class="loader"></div>
+    </div>
     <a href="https://kart.sa" target="_blank">
         <img src="logo.png" alt="logo">
     </a>
@@ -458,8 +511,7 @@ document.addEventListener('DOMContentLoaded', function () {
         <div class="details-list">
             <div class="detail">
                 <span class="label">رابط الموقع:</span>
-                <span class="value" id="site-link"><a href="https://hayhom.com/07kVHN5WtJMEGv5"
-                        target="_blank">https://hayhom.com/07kVHN5WtJMEGv5</a></span>
+                <span class="value" id="site-link"><a href="" target="_blank"></a></span>
             </div>
             <div class="detail">
                 <span class="label">اسم الموقع:</span>
