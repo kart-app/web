@@ -305,7 +305,7 @@
 
             try {
                 // First get current status
-                const statusResponse = await fetch(`https://kart-dev.azurewebsites.net/api/event/invitations/${code}/event-details`, {
+                const statusResponse = await fetch(`https://kart-prod.ambitiousflower-4a2dec7c.eastus.azurecontainerapps.io/api/event/invitations/${code}/event-details`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json'
@@ -333,7 +333,7 @@
                 }
 
                 // Proceed with updating the response
-                const response = await fetch(`https://kart-dev.azurewebsites.net/api/event/invitations/${code}/response`, {
+                const response = await fetch(`https://kart-prod.ambitiousflower-4a2dec7c.eastus.azurecontainerapps.io/api/event/invitations/${code}/response`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -409,7 +409,7 @@
             }
 
             try {
-                const response = await fetch(`https://kart-dev.azurewebsites.net/api/event/invitations/${code}/event-details`, {
+                const response = await fetch(`https://kart-prod.ambitiousflower-4a2dec7c.eastus.azurecontainerapps.io/api/event/invitations/${code}/event-details`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json'
@@ -498,7 +498,7 @@
         <div class="loader"></div>
     </div>
     <a href="https://kart.sa" target="_blank">
-        <img src="new logo.png" alt="logo">
+        <img src="new_logo.png" alt="logo">
     </a>
     <div id="error-message" style="display: none; color: #b22222; font-family: kufam; padding: 20px;"></div>
     <p></p>
